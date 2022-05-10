@@ -1,6 +1,8 @@
 all: sample
 
+ifeq ($(VERSION),)
 VERSION := $(shell git tag -l --sort=-version:refname | head -n 1 | cut -c 2-)
+endif
 
 sample: 
 	@echo "Building version $(VERSION)"
