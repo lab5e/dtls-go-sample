@@ -14,14 +14,18 @@ import (
 	"github.com/pion/dtls/v2"
 )
 
+// The version is set by go build (-ldflags "-X main.Version=x.x.x")
+var Version = "0.0.0"
+
 const (
-	host     = "192.168.1.108"
+	host     = "data.lab5e.com"
 	port     = 1234
 	certFile = "cert.crt"
 	keyFile  = "key.pem"
 )
 
 func main() {
+	fmt.Printf("Version %s\n", Version)
 	// Read the certificate file with the client certificate and intermediates
 	certBytes, err := os.ReadFile(certFile)
 	if err != nil {
@@ -29,7 +33,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Read the private key file
+	// Read the private key file./d
 	keyBytes, err := os.ReadFile(keyFile)
 	if err != nil {
 		fmt.Printf("Error reading key file: %v\n", err)
@@ -43,7 +47,6 @@ func main() {
 		fmt.Printf("Could not create key pair: %v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("Loaded certificate")
 
 	// Create certificate pool with the remaining certifiates.
 	intermediates, roots, err := loadCertPool(certBytes)
@@ -51,9 +54,6 @@ func main() {
 		fmt.Printf("Error loading certificate pool: %v\n", err)
 		os.Exit(1)
 	}
-
-	fmt.Printf("Loaded pool with %d intermediates and %d root CAs\n",
-		len(intermediates.Subjects()), len(roots.Subjects()))
 
 	// Set up the TLS config for the connection. Ideally
 	tlsConfig := &dtls.Config{
@@ -70,8 +70,13 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	ipaddrs, err := net.LookupIP(host)
+	if err != nil {
+		fmt.Printf("Error resolving host name: %v\n", err)
+		os.Exit(1)
+	}
 	// Resolve the host
-	addr := &net.UDPAddr{IP: net.ParseIP(host), Port: port}
+	addr := &net.UDPAddr{IP: ipaddrs[0], Port: port}
 
 	// Dial the server
 	dtlsConn, err := dtls.DialWithContext(ctx, "udp", addr, tlsConfig)
