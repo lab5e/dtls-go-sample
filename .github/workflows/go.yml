@@ -19,7 +19,7 @@ jobs:
         go-version: 1.18
 
     - name: Build
-      run: VERSION=$(echo $GITHUB_REF | cut -d / -f 3) make
+      run: VERSION=${GITHUB_REF#refs/tags/} make
 
     - name: Test
       run: go test -v ./...
