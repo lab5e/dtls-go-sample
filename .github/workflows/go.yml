@@ -18,8 +18,10 @@ jobs:
       with:
         go-version: 1.18
 
+    - name: Ref name
+      run: echo "${{ github.ref_name }}"
     - name: Build
-      run: VERSION=${GITHUB_REF#refs/tags/} make
+      run: VERSION=$(git describe --tags --abbrev=0) make
 
     - name: Test
       run: go test -v ./...
